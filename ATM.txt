@@ -1,0 +1,18 @@
+fitur 
+
+-blokir
+-transfer
+-Tarik tunai
+-setor tunai
+-ganti pin
+-cek saldo rekening
+
+
+modul
+- modul blokir (wafi)
+- modul transfer (wafi)
+- modul Tarik tunai (farell)
+- modul setor tunai (wafi)
+- modul ganti pin (farell)
+- modul cek saldo rekening (farell)
+- modul tampilan awal (farell)
