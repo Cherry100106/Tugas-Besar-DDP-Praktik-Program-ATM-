@@ -4,6 +4,56 @@
 #include <windows.h>
 #include <conio.h>
 
+void clearScreen() {
+    system("cls");
+}
+
+int autentikasi(Rekening *rek, const char *username, const char *password) {
+    FILE *file = fopen("daftarrekening.txt", "r");
+    if (!file) {
+        printf("File tidak ditemukan!\n");
+        return 0;
+    }
+
+    while (fscanf(file, "%s %s %d %d %d", rek->username, rek->password, &rek->saldo, &rek->isBlocked, &rek->pinAttempts) != EOF) {
+        if (strcmp(rek->username, username) == 0) {
+            fclose(file);
+
+            if (rek->isBlocked) {
+                printf("\033[41m\033[37m");
+                printf("Akun Anda telah diblokir. Silakan hubungi bank untuk bantuan lebih lanjut.\n");
+                printf("\033[0m");
+                getchar();
+                return 0;
+            }
+
+            if (strcmp(rek->password, password) == 0) {
+                rek->pinAttempts = 0;
+                updateFileRekening(rek);
+                return 1;
+            } else {
+                rek->pinAttempts++;
+                printf("Password salah. Percobaan ke-%d dari 3.\n", rek->pinAttempts);
+                getchar(); 
+
+                if (rek->pinAttempts >= 3) {
+                    rek->isBlocked = 1;
+                    printf("\033[41m\033[37m");
+                    printf("Akun Anda telah diblokir karena terlalu banyak percobaan login.\n");
+                    printf("\033[0m");
+                    getchar();
+                }
+
+                updateFileRekening(rek);
+                return 0;
+            }
+        }
+    }
+
+    fclose(file);
+    return 0;
+}
+
 
 void tampilkanMenuAwal() {
     printf("\033[44m\033[37m");
@@ -18,7 +68,9 @@ void tampilkanMenuAwal() {
     printf("===========================================\n");
 }
 
-
+void cekSaldo(const Rekening *rek) {
+    printf("Saldo Anda saat ini: %d\n", rek->saldo);
+}
 
 void tarikTunai(Rekening *rek, int jumlah) {
     if (rek->saldo >= jumlah) {
@@ -130,55 +182,8 @@ void gantiPIN(Rekening *rek, const char *pinBaru) {
     updateFileRekening(rek);
     printf("PIN berhasil diganti!\n");
 }
-void cekSaldo(const Rekening *rek) {
-    printf("Saldo Anda saat ini: %d\n", rek->saldo);
-}
 
-int autentikasi(Rekening *rek, const char *username, const char *password) {
-    FILE *file = fopen("daftarrekening.txt", "r");
-    if (!file) {
-        printf("File tidak ditemukan!\n");
-        return 0;
-    }
 
-    while (fscanf(file, "%s %s %d %d %d", rek->username, rek->password, &rek->saldo, &rek->isBlocked, &rek->pinAttempts) != EOF) {
-        if (strcmp(rek->username, username) == 0) {
-            fclose(file);
-
-            if (rek->isBlocked) {
-                printf("\033[41m\033[37m");
-                printf("Akun Anda telah diblokir. Silakan hubungi bank untuk bantuan lebih lanjut.\n");
-                printf("\033[0m");
-                getchar();
-                return 0;
-            }
-
-            if (strcmp(rek->password, password) == 0) {
-                rek->pinAttempts = 0;
-                updateFileRekening(rek);
-                return 1;
-            } else {
-                rek->pinAttempts++;
-                printf("Password salah. Percobaan ke-%d dari 3.\n", rek->pinAttempts);
-                getchar(); 
-
-                if (rek->pinAttempts >= 3) {
-                    rek->isBlocked = 1;
-                    printf("\033[41m\033[37m");
-                    printf("Akun Anda telah diblokir karena terlalu banyak percobaan login.\n");
-                    printf("\033[0m");
-                    getchar();
-                }
-
-                updateFileRekening(rek);
-                return 0;
-            }
-        }
-    }
-
-    fclose(file);
-    return 0;
-}
 
 
 
@@ -230,10 +235,6 @@ int updateFileRekening(const Rekening *rek) {
     return updated;
 }
 
-
-void clearScreen() {
-    system("cls");
-}
 
 void pembayaran(Rekening *rek) {
     int jumlah;
